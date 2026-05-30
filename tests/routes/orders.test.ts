@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: {
     RESEND_API_KEY: 're_test_key',
     EMAIL_FROM: 'orders@shop.test',
@@ -13,11 +13,11 @@ vi.mock('../config', () => ({
   },
 }));
 
-vi.mock('../services/email', () => ({
+vi.mock('../../src/services/email', () => ({
   sendOrderConfirmation: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../services/database', () => ({
+vi.mock('../../src/services/database', () => ({
   createOrder: vi.fn().mockResolvedValue({
     id: 'test-order-id',
     items: [{ name: 'Test Item', quantity: 1, price: 9.99 }],
@@ -27,9 +27,9 @@ vi.mock('../services/database', () => ({
   }),
 }));
 
-import { createApp } from '../app';
-import { sendOrderConfirmation } from '../services/email';
-import { createOrder } from '../services/database';
+import { createApp } from '../../src/app';
+import { sendOrderConfirmation } from '../../src/services/email';
+import { createOrder } from '../../src/services/database';
 
 const API_KEY = 'a'.repeat(32);
 const validPayload = {

@@ -10,7 +10,7 @@ vi.mock('resend', () => ({
   })),
 }));
 
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: {
     RESEND_API_KEY: 're_test_key',
     EMAIL_FROM: 'orders@shop.test',
@@ -18,7 +18,7 @@ vi.mock('../config', () => ({
   },
 }));
 
-import { sendOrderConfirmation } from './email';
+import { sendOrderConfirmation } from '../../src/services/email';
 
 const payload = {
   orderId: 'test-order-123',

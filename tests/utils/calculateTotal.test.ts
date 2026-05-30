@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateTotal } from './calculateTotal';
+import { calculateTotal } from '../../src/utils/calculateTotal';
 
 describe('calculateTotal', () => {
   it('computes total for a single item', () => {

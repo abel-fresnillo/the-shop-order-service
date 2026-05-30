@@ -4,7 +4,7 @@ const { mockReturning } = vi.hoisted(() => ({
   mockReturning: vi.fn(),
 }));
 
-vi.mock('../db', () => ({
+vi.mock('../../src/db', () => ({
   db: {
     insert: vi.fn(() => ({
       values: vi.fn(() => ({
@@ -14,11 +14,11 @@ vi.mock('../db', () => ({
   },
 }));
 
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: { DATABASE_URL: 'postgresql://test:test@localhost/test' },
 }));
 
-import { createOrder } from './database';
+import { createOrder } from '../../src/services/database';
 
 const mockRow = {
   id: 'abc-123',

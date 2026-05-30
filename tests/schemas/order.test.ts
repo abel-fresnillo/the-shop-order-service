@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { OrderRequestSchema } from './order';
+import { OrderRequestSchema } from '../../src/schemas/order';
 
 const validItem = { name: 'Classic T-Shirt', quantity: 2, price: 29.99 };
 
