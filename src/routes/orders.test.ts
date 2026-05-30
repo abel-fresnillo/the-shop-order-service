@@ -9,6 +9,7 @@ vi.mock('../config', () => ({
     ORDER_API_KEY: 'a'.repeat(32),
     ALLOWED_ORIGIN: 'http://localhost:5173',
     NODE_ENV: 'test',
+    DATABASE_URL: 'postgresql://test:test@localhost/test',
   },
 }));
 
@@ -16,10 +17,20 @@ vi.mock('../services/email', () => ({
   sendOrderConfirmation: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../services/database', () => ({
+  createOrder: vi.fn().mockResolvedValue({
+    id: 'test-order-id',
+    items: [{ name: 'Test Item', quantity: 1, price: 9.99 }],
+    total: '9.99',
+    status: 'confirmed',
+    createdAt: new Date(),
+  }),
+}));
+
 import { createApp } from '../app';
 import { sendOrderConfirmation } from '../services/email';
+import { createOrder } from '../services/database';
 
-const app = createApp();
 const API_KEY = 'a'.repeat(32);
 const validPayload = {
   items: [{ name: 'Test Item', quantity: 1, price: 9.99 }],
@@ -27,15 +38,25 @@ const validPayload = {
 
 describe('GET /health', () => {
   it('returns 200 with status ok', async () => {
-    const res = await request(app).get('/health');
+    const res = await request(createApp()).get('/health');
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ status: 'ok' });
   });
 });
 
 describe('POST /orders', () => {
+  let app: ReturnType<typeof createApp>;
+
   beforeEach(() => {
+    app = createApp();
     vi.clearAllMocks();
+    vi.mocked(createOrder).mockResolvedValue({
+      id: 'test-order-id',
+      items: [{ name: 'Test Item', quantity: 1, price: 9.99 }],
+      total: '9.99',
+      status: 'confirmed',
+      createdAt: new Date(),
+    });
     vi.mocked(sendOrderConfirmation).mockResolvedValue(undefined);
   });
 
@@ -49,6 +70,21 @@ describe('POST /orders', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.orderId).toBeDefined();
     expect(typeof res.body.orderId).toBe('string');
+  });
+
+  it('calls createOrder once on valid request', async () => {
+    await request(app).post('/orders').set('x-api-key', API_KEY).send(validPayload);
+    expect(createOrder).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls createOrder with correct items and total', async () => {
+    await request(app).post('/orders').set('x-api-key', API_KEY).send(validPayload);
+    expect(createOrder).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: validPayload.items,
+        total: 9.99,
+      })
+    );
   });
 
   it('calls sendOrderConfirmation once on success', async () => {
@@ -101,7 +137,27 @@ describe('POST /orders', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 502 when email service fails', async () => {
+  it('returns 503 when database write fails', async () => {
+    vi.mocked(createOrder).mockRejectedValue(new Error('connection error'));
+
+    const res = await request(app)
+      .post('/orders')
+      .set('x-api-key', API_KEY)
+      .send(validPayload);
+
+    expect(res.status).toBe(503);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('does not call sendOrderConfirmation when database write fails', async () => {
+    vi.mocked(createOrder).mockRejectedValue(new Error('connection error'));
+
+    await request(app).post('/orders').set('x-api-key', API_KEY).send(validPayload);
+
+    expect(sendOrderConfirmation).not.toHaveBeenCalled();
+  });
+
+  it('returns 201 when email fails after DB write succeeds', async () => {
     vi.mocked(sendOrderConfirmation).mockRejectedValue(new Error('Resend API error'));
 
     const res = await request(app)
@@ -109,9 +165,8 @@ describe('POST /orders', () => {
       .set('x-api-key', API_KEY)
       .send(validPayload);
 
-    expect(res.status).toBe(502);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error).toContain('Failed to send order confirmation');
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
   });
 
   it('returns 404 for unknown routes', async () => {

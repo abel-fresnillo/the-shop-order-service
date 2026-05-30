@@ -7,6 +7,7 @@ const envSchema = z.object({
   EMAIL_RECIPIENT: z.string().email(),
   ORDER_API_KEY: z.string().min(32),
   ALLOWED_ORIGIN: z.string().url(),
+  DATABASE_URL: z.string().url(),
 });
 
 const result = envSchema.safeParse(process.env);

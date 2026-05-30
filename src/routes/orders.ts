@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { OrderRequestSchema } from '../schemas/order';
 import { calculateTotal } from '../utils/calculateTotal';
+import { createOrder } from '../services/database';
 import { sendOrderConfirmation } from '../services/email';
 
 export const ordersRouter = Router();
@@ -25,13 +26,19 @@ ordersRouter.post('/orders', async (req, res) => {
   const total = calculateTotal(items);
 
   try {
-    await sendOrderConfirmation({ orderId, items, total });
+    await createOrder({ id: orderId, items, total });
   } catch {
-    res.status(502).json({
+    res.status(503).json({
       success: false,
-      error: 'Failed to send order confirmation',
+      error: 'Failed to save order. Please try again.',
     });
     return;
+  }
+
+  try {
+    await sendOrderConfirmation({ orderId, items, total });
+  } catch (err) {
+    console.error('Order confirmation email failed for orderId=%s: %s', orderId, err);
   }
 
   res.status(201).json({ success: true, orderId });
