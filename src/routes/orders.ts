@@ -44,6 +44,5 @@ ordersRouter.post('/orders', async (req, res) => {
     logger.error('Order confirmation email failed', { orderId, err: (err as Error).message });
   }
 
-  logger.info('order created', { orderId });
   res.status(201).json({ success: true, orderId });
 });
