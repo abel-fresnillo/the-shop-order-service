@@ -6,7 +6,10 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().min(1),
   EMAIL_RECIPIENT: z.string().email(),
   ORDER_API_KEY: z.string().min(32),
-  ALLOWED_ORIGIN: z.string().url(),
+  ALLOWED_ORIGIN: z
+    .string()
+    .transform((val) => val.split(',').map((s) => s.trim()))
+    .pipe(z.array(z.string().url()).min(1)),
   DATABASE_URL: z.string().url(),
 });
 
