@@ -7,7 +7,22 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['api/index.ts', 'vitest.config.ts', 'drizzle.config.ts', 'tests/**', 'dist/**'],
+      exclude: [
+        'api/index.ts',
+        'vitest.config.ts',
+        'drizzle.config.ts',
+        'tests/**',
+        'dist/**',
+        'src/server.ts',
+        'src/config.ts',
+        'src/db/**',
+      ],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
     },
   },
 });
