@@ -13,8 +13,8 @@ export function createApp() {
   app.use(
     cors({
       origin: config.ALLOWED_ORIGIN,
-      methods: ['POST'],
-      allowedHeaders: ['Content-Type', 'x-api-key'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization'],
     })
   );
 
@@ -29,7 +29,7 @@ export function createApp() {
   );
 
   app.use((req, res, next) => {
-    if (req.path === '/health') return next();
+    if (req.path === '/health' || req.method === 'OPTIONS') return next();
     const key = req.headers['x-api-key'];
     if (!key || key !== config.ORDER_API_KEY) {
       res.status(401).json({ success: false, error: 'Unauthorized' });
