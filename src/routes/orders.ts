@@ -4,6 +4,8 @@ import { OrderRequestSchema } from '../schemas/order';
 import { calculateTotal } from '../utils/calculateTotal';
 import { createOrder } from '../services/database';
 import { sendOrderConfirmation } from '../services/email';
+import { ordersFailed } from '../observability/metrics';
+import { logger } from '../observability/logger';
 
 export const ordersRouter = Router();
 
@@ -38,7 +40,8 @@ ordersRouter.post('/orders', async (req, res) => {
   try {
     await sendOrderConfirmation({ orderId, items, total });
   } catch (err) {
-    console.error('Order confirmation email failed for orderId=%s: %s', orderId, err);
+    ordersFailed.add(1, { reason: 'email' });
+    logger.error('Order confirmation email failed', { orderId, err: (err as Error).message });
   }
 
   res.status(201).json({ success: true, orderId });

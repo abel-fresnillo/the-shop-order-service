@@ -16,6 +16,8 @@ export default defineConfig({
         'src/server.ts',
         'src/config.ts',
         'src/db/**',
+        'src/instrumentation.ts',
+        'src/observability/**',
       ],
       thresholds: {
         lines: 80,
