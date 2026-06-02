@@ -1,6 +1,8 @@
+import { SpanStatusCode } from '@opentelemetry/api';
 import { Resend } from 'resend';
 import { config } from '../config';
 import type { OrderItem } from '../schemas/order';
+import { getTracer } from '../observability/tracer';
 
 const resend = new Resend(config.RESEND_API_KEY);
 
@@ -60,14 +62,29 @@ function buildEmailHtml(payload: OrderEmailPayload): string {
 }
 
 export async function sendOrderConfirmation(payload: OrderEmailPayload): Promise<void> {
-  const { error } = await resend.emails.send({
-    from: config.EMAIL_FROM,
-    to: config.EMAIL_RECIPIENT,
-    subject: `New Order #${payload.orderId}`,
-    html: buildEmailHtml(payload),
-  });
+  return getTracer().startActiveSpan('email.sendOrderConfirmation', async (span) => {
+    try {
+      span.setAttributes({
+        'order.id': payload.orderId,
+        'messaging.system': 'resend',
+      });
 
-  if (error) {
-    throw new Error(`Failed to send order email: ${error.message}`);
-  }
+      const { error } = await resend.emails.send({
+        from: config.EMAIL_FROM,
+        to: config.EMAIL_RECIPIENT,
+        subject: `New Order #${payload.orderId}`,
+        html: buildEmailHtml(payload),
+      });
+
+      if (error) {
+        throw new Error(`Failed to send order email: ${error.message}`);
+      }
+    } catch (err) {
+      span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message });
+      span.recordException(err as Error);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
 }
