@@ -61,25 +61,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Snyk SCA — dependency scan
-        uses: snyk/actions/node@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        run: snyk test --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
 
       - name: Snyk monitor — upload snapshot
         if: github.event_name == 'push' && github.ref == 'refs/heads/development'
-        uses: snyk/actions/node@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        run: snyk monitor
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
 
       - name: Snyk SAST — code analysis
-        uses: snyk/actions/node@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        run: snyk code test --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: code test
-          args: --severity-threshold=high
