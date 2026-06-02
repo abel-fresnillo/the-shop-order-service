@@ -11,7 +11,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 12
     groups:
       dev-dependencies:
         dependency-type: development
