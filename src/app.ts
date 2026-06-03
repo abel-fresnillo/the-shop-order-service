@@ -10,13 +10,25 @@ export function createApp() {
 
   app.use(express.json({ limit: '16kb' }));
 
-  app.use(
-    cors({
-      origin: config.ALLOWED_ORIGIN,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization'],
-    })
-  );
+  const allowedOriginsSet = new Set(config.ALLOWED_ORIGINS);
+  const allowedOriginPattern = config.ALLOWED_ORIGIN_PATTERN
+    ? new RegExp(config.ALLOWED_ORIGIN_PATTERN)
+    : null;
+
+  const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+      if (!origin || allowedOriginsSet.has(origin) || allowedOriginPattern?.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  };
+
+  app.options('*', cors(corsOptions));
+  app.use(cors(corsOptions));
 
   app.use(
     rateLimit({
@@ -29,7 +41,7 @@ export function createApp() {
   );
 
   app.use((req, res, next) => {
-    if (req.path === '/health' || req.method === 'OPTIONS') return next();
+    if (req.path === '/health') return next();
     const key = req.headers['x-api-key'];
     if (!key || key !== config.ORDER_API_KEY) {
       res.status(401).json({ success: false, error: 'Unauthorized' });
