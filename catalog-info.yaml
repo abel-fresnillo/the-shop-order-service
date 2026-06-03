@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: the-shop-order-service
+  description: Backend service that receives orders from The Shop React frontend, persists them to a Postgres database, and sends an email confirmation via Resend.
+  annotations:
+    github.com/project-slug: abel-fresnillo/the-shop-order-service
+  links:
+    - url: https://github.com/abel-fresnillo/the-shop-order-service/actions/workflows/ci.yml
+      title: CI Workflow
+      icon: github
+    - url: https://github.com/abel-fresnillo/the-shop-order-service/actions/workflows/deploy.yml
+      title: Deploy Workflow
+      icon: github
+    - url: https://iscabel.grafana.net/d/is5wqkj
+      title: Grafana Dashboard
+      icon: dashboard
+spec:
+  type: service
+  lifecycle: production
+  owner: user:default/abel-fresnillo
+  system: the-shop
