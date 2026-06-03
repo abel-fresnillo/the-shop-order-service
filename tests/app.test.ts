@@ -8,7 +8,7 @@ vi.mock('../src/config', () => ({
     EMAIL_FROM: 'orders@shop.test',
     EMAIL_RECIPIENT: 'recipient@shop.test',
     ORDER_API_KEY: 'a'.repeat(32),
-    ALLOWED_ORIGIN: 'http://localhost:5173',
+    ALLOWED_ORIGINS: ['http://localhost:5173'],
     NODE_ENV: 'test',
     DATABASE_URL: 'postgresql://test:test@localhost/test',
   },
