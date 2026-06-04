@@ -5,6 +5,7 @@ metadata:
   description: Backend service that receives orders from The Shop React frontend, persists them to a Postgres database, and sends an email confirmation via Resend.
   annotations:
     github.com/project-slug: abel-fresnillo/the-shop-order-service
+    backstage.io/techdocs-ref: dir:.
   links:
     - url: https://github.com/abel-fresnillo/the-shop-order-service/actions/workflows/ci.yml
       title: CI Workflow
