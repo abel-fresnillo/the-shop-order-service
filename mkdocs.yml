@@ -1,0 +1,5 @@
+site_name: The Shop Order Service
+nav:
+  - Home: index.md
+plugins:
+  - techdocs-core
