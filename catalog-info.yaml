@@ -21,3 +21,20 @@ spec:
   lifecycle: production
   owner: user:default/abel-fresnillo
   system: the-shop
+  providesApis:
+    - the-shop-order-api
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: the-shop-order-api
+  description: REST API for creating orders and checking service health.
+  annotations:
+    github.com/project-slug: abel-fresnillo/the-shop-order-service
+spec:
+  type: openapi
+  lifecycle: production
+  owner: user:default/abel-fresnillo
+  system: the-shop
+  definition:
+    $text: https://raw.githubusercontent.com/abel-fresnillo/the-shop-order-service/main/docs/openapi.yaml
