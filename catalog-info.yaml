@@ -37,4 +37,4 @@ spec:
   owner: user:default/abel-fresnillo
   system: the-shop
   definition:
-    $text: https://raw.githubusercontent.com/abel-fresnillo/the-shop-order-service/main/docs/openapi.yaml
+    $text: ./docs/openapi.yaml
